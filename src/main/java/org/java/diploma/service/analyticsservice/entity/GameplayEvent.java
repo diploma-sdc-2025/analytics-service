@@ -1,13 +1,11 @@
 package org.java.diploma.service.analyticsservice.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "gameplay_events")
-@Data
 public class GameplayEvent {
 
     @Id
@@ -43,5 +41,69 @@ public class GameplayEvent {
         if (time == null) {
             time = Instant.now();
         }
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Instant getTime() {
+        return time;
+    }
+
+    public void setTime(Instant time) {
+        this.time = time;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(Long matchId) {
+        this.matchId = matchId;
+    }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }
