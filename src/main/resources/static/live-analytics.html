@@ -2,115 +2,157 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Real-Time Analytics Dashboard</title>
+    <title>Matchmaking Analytics Dashboard</title>
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #eef1f5;
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f2f4f8;
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
+            color: #1f2937;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px 40px 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
-            color: #222;
-            letter-spacing: 1px;
+            margin: 0 0 30px;
+            font-size: 1.9rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
+        /* Metrics grid */
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
         }
 
         .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 22px;
             text-align: center;
-            transition: transform 0.2s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
         }
 
         .card.update {
-            transform: scale(1.05);
-            background: #e8f7ff;
+            border-color: #3b82f6;
+            background: #eef5ff;
         }
 
         .metric-value {
-            font-size: 2.7rem;
-            font-weight: bold;
-            margin: 10px 0;
-            color: #007aff;
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #2563eb;
         }
 
         .metric-label {
-            font-size: 1.1rem;
-            color: #555;
+            font-size: 1rem;
+            color: #6b7280;
         }
 
+        /* Status bar */
         .status {
-            margin-top: 15px;
+            margin: 20px auto 30px;
             text-align: center;
-            font-size: 1rem;
-            padding: 10px;
-            border-radius: 8px;
+            font-size: 0.95rem;
+            padding: 10px 14px;
+            border-radius: 999px;
+            width: fit-content;
+            border: 1px solid transparent;
         }
 
         .connected {
-            background: #d8f8d8;
-            color: #0a7a0a;
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #6ee7b7;
         }
 
         .disconnected {
-            background: #ffd6d6;
-            color: #b60000;
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
         }
 
+        /* Chart section */
         .chart-container {
-            margin-top: 40px;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-top: 10px;
+            padding: 24px;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+        }
+
+        .chart-container h2 {
+            text-align: center;
+            font-size: 1.25rem;
+            margin-bottom: 18px;
+            font-weight: 500;
+            color: #374151;
         }
     </style>
 </head>
 <body>
 
-<h1>Real-Time Matchmaking Analytics Dashboard</h1>
+<div class="container">
 
-<div class="dashboard">
+    <h1>Real-Time Matchmaking Analytics</h1>
 
-    <div class="card" id="cardQueue">
-        <div class="metric-value" id="queueSize">0</div>
-        <div class="metric-label">Current Queue Size</div>
+    <div class="dashboard">
+
+        <div class="card" id="cardQueue">
+            <div class="metric-value" id="queueSize">0</div>
+            <div class="metric-label">Current Queue Size</div>
+        </div>
+
+        <div class="card" id="cardJoins">
+            <div class="metric-value" id="totalJoins">0</div>
+            <div class="metric-label">Total Players Joined</div>
+        </div>
+
+        <div class="card" id="cardUpdated">
+            <div class="metric-value" id="lastUpdated">N/A</div>
+            <div class="metric-label">Last Updated</div>
+        </div>
+
     </div>
 
-    <div class="card" id="cardJoins">
-        <div class="metric-value" id="totalJoins">0</div>
-        <div class="metric-label">Total Players Joined</div>
+    <div class="status disconnected" id="connectionStatus">
+        Connecting to WebSocket…
     </div>
 
-    <div class="card" id="cardUpdated">
-        <div class="metric-value" id="lastUpdated">N/A</div>
-        <div class="metric-label">Last Updated</div>
+    <div class="chart-container">
+        <h2>Queue Size Over Time</h2>
+        <canvas id="queueChart" height="90"></canvas>
     </div>
 
-</div>
-
-<div class="status" id="connectionStatus">Connecting to WebSocket...</div>
-
-<div class="chart-container">
-    <h2 style="text-align:center;color:#333;">Queue Size Over Time</h2>
-    <canvas id="queueChart" height="100"></canvas>
 </div>
 
 <script>
@@ -126,13 +168,24 @@
                 label: 'Queue Size',
                 data: [],
                 borderWidth: 3,
+                tension: 0.3,
                 fill: false
             }]
         },
         options: {
             animation: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
             scales: {
-                y: { beginAtZero: true }
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
             }
         }
     });
@@ -147,8 +200,7 @@
     const stompClient = Stomp.over(socket);
 
     stompClient.connect({}, function () {
-        console.log("WebSocket connected");
-        statusEl.textContent = "Connected";
+        statusEl.textContent = "Connected to analytics stream";
         statusEl.className = "status connected";
 
         stompClient.subscribe('/topic/analytics', function (message) {
@@ -180,7 +232,7 @@
     });
 
     socket.onclose = function () {
-        statusEl.textContent = "Disconnected";
+        statusEl.textContent = "Disconnected from analytics stream";
         statusEl.className = "status disconnected";
     };
 </script>
