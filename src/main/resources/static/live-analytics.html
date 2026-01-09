@@ -196,7 +196,7 @@
         setTimeout(() => card.classList.remove("update"), 300);
     }
 
-    const socket = new SockJS('http://localhost:8080/ws');
+    const socket = new SockJS(window.location.origin + '/ws');
     const stompClient = Stomp.over(socket);
 
     stompClient.connect({}, function () {
