@@ -11,7 +11,9 @@ import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfig
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.test.context.ActiveProfiles;
@@ -48,9 +50,13 @@ class AnalyticsIntegrationTest {
     void processEvent_shouldPersistGameplayEvent() {
         ValueOperations<String, Object> valueOps = mock(ValueOperations.class);
         ZSetOperations<String, Object> zSetOps = mock(ZSetOperations.class);
+        ListOperations<String, Object> listOps = mock(ListOperations.class);
+        SetOperations<String, Object> setOps = mock(SetOperations.class);
 
         when(redisTemplate.opsForValue()).thenReturn(valueOps);
         when(redisTemplate.opsForZSet()).thenReturn(zSetOps);
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+        when(redisTemplate.opsForSet()).thenReturn(setOps);
 
         MatchmakingEvent event = new MatchmakingEvent();
         event.setType("player_join");

@@ -26,9 +26,10 @@ class LeaderboardServiceTest {
 
     @Test
     void getLeaderboardUsesDefaultLimitWhenNull() {
+        // Columns: userId, totalEvents, queueJoins, queueLeaves, matchesPlayed, winRatePct, currentRating
         when(repository.findLeaderboardAggregates(50)).thenReturn(List.of(
-                new Object[]{1L, 20L, 11L, 9L},
-                new Object[]{2L, 15L, 8L, 7L}
+                new Object[]{1L, 20L, 11L, 9L, 12L, 58.3, 1450L},
+                new Object[]{2L, 15L, 8L, 7L, 5L, 20.0, 1100L}
         ));
 
         List<LeaderboardRowResponse> rows = service.getLeaderboard(null);

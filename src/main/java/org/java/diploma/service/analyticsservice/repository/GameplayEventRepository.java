@@ -27,15 +27,21 @@ public interface GameplayEventRepository extends JpaRepository<GameplayEvent, Lo
      */
     @Query(
             value = """
-                    SELECT user_id AS uid,
+                    SELECT ge.user_id AS uid,
                            COUNT(*)::bigint AS total_events,
-                           COALESCE(SUM(CASE WHEN event_type = 'player_join' THEN 1 ELSE 0 END), 0)::bigint AS queue_joins,
-                           COALESCE(SUM(CASE WHEN event_type = 'player_leave' THEN 1 ELSE 0 END), 0)::bigint AS queue_leaves
-                    FROM gameplay_events
-                    WHERE user_id IS NOT NULL
-                    GROUP BY user_id
-                    ORDER BY COUNT(*) DESC,
-                             SUM(CASE WHEN event_type = 'player_join' THEN 1 ELSE 0 END) DESC
+                           COALESCE(SUM(CASE WHEN ge.event_type = 'player_join' THEN 1 ELSE 0 END), 0)::bigint AS queue_joins,
+                           COALESCE(SUM(CASE WHEN ge.event_type = 'player_leave' THEN 1 ELSE 0 END), 0)::bigint AS queue_leaves,
+                           COALESCE(ps.total_matches_played, 0)::bigint AS matches_played,
+                           COALESCE(ps.win_rate, 0)::double precision AS win_rate_percent,
+                           COALESCE(ps.current_rating, 1000)::bigint AS current_rating
+                    FROM gameplay_events ge
+                    LEFT JOIN player_statistics ps ON ps.user_id = ge.user_id
+                    WHERE ge.user_id IS NOT NULL
+                    GROUP BY ge.user_id, ps.total_matches_played, ps.win_rate, ps.current_rating
+                    ORDER BY COALESCE(ps.current_rating, 1000) DESC,
+                             COALESCE(ps.total_matches_played, 0) DESC,
+                             COALESCE(ps.win_rate, 0) DESC,
+                             COUNT(*) DESC
                     LIMIT :limit
                     """,
             nativeQuery = true

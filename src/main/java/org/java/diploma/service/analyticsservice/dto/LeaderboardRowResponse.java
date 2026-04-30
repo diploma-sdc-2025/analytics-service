@@ -9,6 +9,9 @@ public record LeaderboardRowResponse(
         long totalEvents,
         long queueJoins,
         long queueLeaves,
+        long matchesPlayed,
+        double winRatePercent,
+        long currentRating,
         int rank
 ) {
 }

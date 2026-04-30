@@ -37,7 +37,19 @@ public class LeaderboardService {
             long totalEvents = ((Number) r[1]).longValue();
             long queueJoins = ((Number) r[2]).longValue();
             long queueLeaves = ((Number) r[3]).longValue();
-            out.add(new LeaderboardRowResponse(userId, totalEvents, queueJoins, queueLeaves, rank++));
+            long matchesPlayed = ((Number) r[4]).longValue();
+            double winRatePercent = ((Number) r[5]).doubleValue();
+            long currentRating = ((Number) r[6]).longValue();
+            out.add(new LeaderboardRowResponse(
+                    userId,
+                    totalEvents,
+                    queueJoins,
+                    queueLeaves,
+                    matchesPlayed,
+                    winRatePercent,
+                    currentRating,
+                    rank++
+            ));
         }
         return out;
     }
