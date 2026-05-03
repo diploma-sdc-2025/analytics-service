@@ -49,10 +49,8 @@ public class RedisSubscriber implements MessageListener {
             MatchmakingEvent event = objectMapper.readValue(body, MatchmakingEvent.class);
             analyticsService.processEvent(event);
 
-            // Coalesced SSE fan-out (primary delivery channel).
             realtimeAdminStreamService.scheduleBroadcast();
 
-            // Optional STOMP fan-out kept best-effort.
             try {
                 analyticsWebSocketService.sendCurrentMetrics();
             } catch (RuntimeException stompFailure) {

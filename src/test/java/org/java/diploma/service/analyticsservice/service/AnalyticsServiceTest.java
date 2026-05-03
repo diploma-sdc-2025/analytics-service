@@ -50,12 +50,15 @@ class AnalyticsServiceTest {
     @Mock
     SetOperations<String, Object> setOperations;
 
+    @Mock
+    PlayerStatisticsUpdater playerStatisticsUpdater;
+
     AnalyticsService analyticsService;
 
     @BeforeEach
     void setUp() {
         ObjectMapper om = new ObjectMapper().registerModule(new JavaTimeModule());
-        analyticsService = new AnalyticsService(gameplayEventRepository, redisTemplate, om);
+        analyticsService = new AnalyticsService(gameplayEventRepository, redisTemplate, om, playerStatisticsUpdater);
         lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         lenient().when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
         lenient().when(redisTemplate.opsForList()).thenReturn(listOperations);

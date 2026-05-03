@@ -59,4 +59,31 @@ public interface GameplayEventRepository extends JpaRepository<GameplayEvent, Lo
             nativeQuery = true
     )
     List<Object[]> aggregateStatsForUser(@Param("userId") long userId);
+
+    @Query(
+            value = """
+                    SELECT ge.time,
+                           CASE
+                               WHEN (ge.metadata::jsonb ->> 'winnerUserId')::bigint = :userId
+                                   THEN (ge.metadata::jsonb ->> 'loserUserId')::bigint
+                               ELSE (ge.metadata::jsonb ->> 'winnerUserId')::bigint
+                               END AS opponent_id,
+                           CASE
+                               WHEN (ge.metadata::jsonb ->> 'winnerUserId')::bigint = :userId THEN 'W'
+                               ELSE 'L'
+                               END AS outcome
+                    FROM gameplay_events ge
+                    WHERE ge.event_type = 'match_finished'
+                      AND ge.metadata IS NOT NULL
+                      AND TRIM(ge.metadata) <> ''
+                      AND (
+                        (ge.metadata::jsonb ->> 'winnerUserId')::bigint = :userId
+                            OR (ge.metadata::jsonb ->> 'loserUserId')::bigint = :userId
+                        )
+                    ORDER BY ge.time DESC
+                    LIMIT :limit
+                    """,
+            nativeQuery = true
+    )
+    List<Object[]> findRecentFinishedMatches(@Param("userId") long userId, @Param("limit") int limit);
 }

@@ -74,13 +74,16 @@ public class AnalyticsService {
     private final GameplayEventRepository gameplayEventRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final PlayerStatisticsUpdater playerStatisticsUpdater;
 
     public AnalyticsService(GameplayEventRepository gameplayEventRepository,
                             RedisTemplate<String, Object> redisTemplate,
-                            ObjectMapper objectMapper) {
+                            ObjectMapper objectMapper,
+                            PlayerStatisticsUpdater playerStatisticsUpdater) {
         this.gameplayEventRepository = gameplayEventRepository;
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
+        this.playerStatisticsUpdater = playerStatisticsUpdater;
     }
 
     public void processEvent(MatchmakingEvent event) {
@@ -91,6 +94,14 @@ public class AnalyticsService {
         updateRealTimeMetrics(event);
         updateMatchLifecycle(event);
         appendRecentEvent(event);
+
+        if ("match_finished".equals(event.getType())) {
+            try {
+                playerStatisticsUpdater.onMatchFinished(event);
+            } catch (RuntimeException e) {
+                log.warn("Player statistics update failed for matchId={}", event.getMatchId(), e);
+            }
+        }
     }
 
     private void saveEventToDatabase(MatchmakingEvent event) {

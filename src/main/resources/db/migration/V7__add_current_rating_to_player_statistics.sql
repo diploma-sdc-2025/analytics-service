@@ -1,4 +1,4 @@
-docker compose logs -f analytics-serviceALTER TABLE player_statistics
+ALTER TABLE player_statistics
 ADD COLUMN IF NOT EXISTS current_rating INT NOT NULL DEFAULT 1000;
 
 -- Demo ratings for seeded players.
